@@ -253,10 +253,10 @@ where
         count <= 1_000_000 && count <= r.get_ref().len(),
         "unreasonable mesh element count"
     );
-    (0..count).map(|_| Ok(r.read_le()?)).collect()
+    (0..count).map(|_| Ok(BinReaderExt::read_le(r)?)).collect()
 }
 fn count(r: &mut Cursor<&[u8]>) -> Result<usize> {
-    Ok(r.read_le::<u32>()? as usize)
+    Ok(BinReaderExt::read_le::<u32>(r)? as usize)
 }
 fn bytes(r: &mut Cursor<&[u8]>, count: usize) -> Result<Vec<u8>> {
     ensure!(
@@ -273,7 +273,7 @@ fn chunks(data: &[u8], d: &mut Document) -> Result<()> {
     while (r.position() as usize) < r.get_ref().len() {
         let tag = bytes(&mut r, 8)?;
         let tag = std::str::from_utf8(&tag)?.trim_end_matches('\0').to_owned();
-        let version = r.read_le::<u32>()?;
+        let version = BinReaderExt::read_le::<u32>(&mut r)?;
         let size = count(&mut r)?;
         let data = bytes(&mut r, size)?;
         ensure!(
@@ -331,7 +331,7 @@ fn chunks(data: &[u8], d: &mut Document) -> Result<()> {
         let n = count(&mut r)?;
         ensure!(n == data.len() - 4, "FACS chunk size mismatch");
         if n > 0 {
-            facs(d, r.read_le()?)?;
+            facs(d, BinReaderExt::read_le(&mut r)?)?;
         }
     }
     for (tag, (version, data)) in chunks {
@@ -357,7 +357,10 @@ pub fn decode(data: &[u8]) -> Result<Document> {
         d = decode(&v4)?;
         if size > 0 {
             ensure!(format == 1, "unknown FACS format {format}");
-            facs(&mut d, Cursor::new(&data[data.len() - size..]).read_le()?)?;
+            facs(
+                &mut d,
+                BinReaderExt::read_le(&mut Cursor::new(&data[data.len() - size..]))?,
+            )?;
         }
     } else {
         match rbx_mesh::read_mesh_versioned(Cursor::new(data))
@@ -444,8 +447,10 @@ fn draco(d: &mut Document, bytes: &[u8]) -> Result<Vec<Face2>> {
                 Ok(data.iter().map(|v| *v as f32 / 255.).collect())
             } else {
                 Ok(data
-                    .chunks_exact(4)
-                    .map(|v| f32::from_le_bytes(v.try_into().unwrap()))
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .map(|v| f32::from_le_bytes(*v))
                     .collect())
             }
         };

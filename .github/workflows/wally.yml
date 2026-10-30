@@ -37,7 +37,8 @@ jobs:
         env:
           WALLY_AUTH: ${{ secrets.WALLY_AUTH }}
         run: |
-          test -n "$WALLY_AUTH"
-          mkdir -p "$HOME/.wally"
-          printf '%s' "$WALLY_AUTH" > "$HOME/.wally/auth.toml"
+          python scripts/wally_auth.py "$HOME/.wally/auth.toml"
           wally publish --project-path mesh-runtime
+      - name: Remove publishing credentials
+        if: always()
+        run: rm -f "$HOME/.wally/auth.toml"

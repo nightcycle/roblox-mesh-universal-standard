@@ -10,8 +10,11 @@ executable and `nightcycle/roblox-mesh-universal-standard` Wally package.
    for CI, builds Windows x64, Linux x64, macOS x64 and macOS ARM64 ZIPs, then
    publishes those archives, the Wally ZIP, package RBXM, demo RBXL and SHA256SUMS.
    Executables are at the root of each platform-named ZIP for Rokit discovery.
-4. Configure repository secret `WALLY_AUTH` with the complete auth.toml produced
-   by `wally login` for an account allowed to publish in the nightcycle scope.
+4. Configure repository secret `WALLY_AUTH` with either the raw token stored by
+   `wally login` for `https://api.wally.run/` or the complete auth.toml file.
+   The account must be allowed to publish in the nightcycle scope. The workflow
+   validates and writes the TOML config without logging the token, then removes
+   the credential file after publishing, including when publishing fails.
    Run **Publish Wally** manually with the published version tag.
 5. Verify installation in a fresh consumer project:
    `rokit add nightcycle/roblox-mesh-universal-standard@X.Y.Z`, `rmus --version`,
@@ -19,3 +22,5 @@ executable and `nightcycle/roblox-mesh-universal-standard` Wally package.
 
 The workflows do not publish merely by building locally. A tag triggers the
 GitHub release; the Wally workflow is a separate explicit publication step.
+Both workflows build or publish the tagged source. A retry of an old tag still
+uses the code at that tag, so release tags must contain the relevant fixes.

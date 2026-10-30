@@ -117,7 +117,7 @@ pub fn decode(bytes: &[u8], filename: &str, scale: f32) -> Result<Document> {
     let mut indices = Vec::new();
     for f in &mesh.faces {
         let count = ufbx::triangulate_face_vec(&mut indices, mesh, *f) as usize;
-        for tri in indices[..count * 3].chunks_exact(3) {
+        for tri in indices[..count * 3].as_chunks::<3>().0 {
             let mut corners = tri.to_vec();
             if transform.determinant() < 0. {
                 corners.swap(1, 2);

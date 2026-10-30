@@ -32,3 +32,6 @@ rustc-ice-*.txt
 /dist/
 /Packages/
 /sourcemap.json
+
+# Python release-script caches
+__pycache__/
