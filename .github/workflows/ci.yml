@@ -13,6 +13,16 @@ on:
 permissions:
   contents: read
 jobs:
+  workflows:
+    name: Workflow lint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: docker://rhysd/actionlint:1.7.12
+        with:
+          args: -color -shellcheck=
   rust:
     strategy:
       matrix:

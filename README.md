@@ -193,8 +193,8 @@ fixtures. If the native compiler cannot write its temporary files, use a writabl
 
 ## Rokit and Wally distribution
 
-Release workflows are included; installation from registries requires publishing
-the first release. After `v0.1.0` is published:
+The current source version is `0.1.0`. After publishing the matching GitHub
+release and Wally package, install them with:
 
 ```toml
 # rokit.toml

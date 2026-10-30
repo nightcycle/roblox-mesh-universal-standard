@@ -19,6 +19,13 @@ def validate(tag, root=ROOT):
     wally = tomllib.loads((root / "mesh-runtime/wally.toml").read_text())["package"]["version"]
     if tag != f"v{rust}" or rust != wally:
         raise SystemExit(f"Tag {tag}, Rust {rust} and Wally {wally} must match")
+    lock = tomllib.loads((root / "Cargo.lock").read_text())
+    versions = [
+        package["version"] for package in lock["package"]
+        if package["name"] == "roblox-mesh-universal-standard"
+    ]
+    if versions != [rust]:
+        raise SystemExit("Cargo.lock must contain the matching package version; run cargo check before tagging")
     return rust
 
 def package(tag, platform):

@@ -9,6 +9,11 @@ on:
         description: Existing version tag to release or retry, e.g. v0.1.0
         required: true
         type: string
+      repair:
+        description: Repair from the selected branch (moves the tag and replaces release assets after CI passes)
+        required: false
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -19,21 +24,68 @@ defaults:
     shell: bash
 env:
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+  REPAIR_RELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.repair || false }}
 jobs:
   prepare:
     runs-on: ubuntu-22.04
+    timeout-minutes: 10
     outputs:
       sha: ${{ steps.resolve.outputs.sha }}
+      tag_oid: ${{ steps.resolve.outputs.tag_oid }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Resolve the release tag
+      - name: Resolve the release source
         id: resolve
         run: |
           git check-ref-format "refs/tags/$RELEASE_TAG"
+          tag_oid="$(git rev-parse --verify "refs/tags/$RELEASE_TAG")"
           release_sha="$(git rev-parse --verify "refs/tags/$RELEASE_TAG^{commit}")"
+          if [[ "$REPAIR_RELEASE" == "true" ]]; then
+            release_sha="$GITHUB_SHA"
+          fi
           echo "sha=$release_sha" >> "$GITHUB_OUTPUT"
+          echo "tag_oid=$tag_oid" >> "$GITHUB_OUTPUT"
+          echo "Release $RELEASE_TAG builds commit $release_sha"
+          printf 'Release tag: `%s`\n\nSource commit: `%s`\n\n' "$RELEASE_TAG" "$release_sha" >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$REPAIR_RELEASE" == "true" ]]; then
+            echo 'Repair enabled: after CI and builds pass, the tag will move to this commit and release assets will be replaced.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'CI and binaries use the existing tagged commit.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Check whether the release can be published
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_json="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG")" || {
+            if [[ "$(jq -r '.status // empty' <<< "$release_json")" != "404" ]]; then
+              echo "::error::Could not inspect release $RELEASE_TAG."
+              exit 1
+            fi
+          }
+          if [[ "$(jq -r '.id // empty' <<< "$release_json")" != "" ]]; then
+            is_draft="$(jq -r '.draft' <<< "$release_json")"
+            if [[ "$is_draft" != "true" && "$REPAIR_RELEASE" != "true" ]]; then
+              echo "::error::Release $RELEASE_TAG is already published. To repair this version, dispatch from the fixed branch with repair enabled."
+              exit 1
+            fi
+            immutable="$(jq -r '.immutable // false' <<< "$release_json")"
+            if [[ "$immutable" == "true" ]]; then
+              echo "::error::Release $RELEASE_TAG is immutable and cannot be repaired."
+              exit 1
+            fi
+          fi
+      - name: Check out the release manifests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.resolve.outputs.sha }}
+          path: release-source
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate tag, manifest, and lockfile versions before CI
+        run: python scripts/release.py validate "$RELEASE_TAG" release-source
   checks:
     needs: prepare
     uses: ./.github/workflows/ci.yml
@@ -86,12 +138,41 @@ jobs:
       - name: Publish versioned executable archives and demo
         env:
           GH_TOKEN: ${{ github.token }}
+          EXPECTED_TAG_OID: ${{ needs.prepare.outputs.tag_oid }}
+          SOURCE_SHA: ${{ needs.prepare.outputs.sha }}
         run: |
-          if is_draft="$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft' 2>/dev/null)"; then
-            gh release upload "$RELEASE_TAG" dist/* --clobber
-            if [[ "$is_draft" == "true" ]]; then
-              gh release edit "$RELEASE_TAG" --draft=false
+          exists=false
+          release_json="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG")" || {
+            if [[ "$(jq -r '.status // empty' <<< "$release_json")" != "404" ]]; then
+              echo "::error::Could not inspect release $RELEASE_TAG."
+              exit 1
             fi
-          else
-            gh release create "$RELEASE_TAG" --verify-tag --generate-notes dist/*
+          }
+          if [[ "$(jq -r '.id // empty' <<< "$release_json")" != "" ]]; then
+            exists=true
+            is_draft="$(jq -r '.draft' <<< "$release_json")"
+            if [[ "$is_draft" != "true" && "$REPAIR_RELEASE" != "true" ]]; then
+              echo "::error::Release $RELEASE_TAG is already published; repair must be enabled to replace its assets."
+              exit 1
+            fi
+            immutable="$(jq -r '.immutable // false' <<< "$release_json")"
+            if [[ "$immutable" == "true" ]]; then
+              echo "::error::Release $RELEASE_TAG became immutable; refusing to move its tag or replace assets."
+              exit 1
+            fi
           fi
+          current_tag_oid="$(git ls-remote --refs origin "refs/tags/$RELEASE_TAG" | cut -f1)"
+          if [[ "$current_tag_oid" != "$EXPECTED_TAG_OID" ]]; then
+            echo "::error::Tag $RELEASE_TAG changed during this run. Dispatch again to build and verify the new source."
+            exit 1
+          fi
+          if [[ "$REPAIR_RELEASE" == "true" ]]; then
+            git update-ref "refs/tags/$RELEASE_TAG" "$SOURCE_SHA"
+            git push --force-with-lease="refs/tags/$RELEASE_TAG:$EXPECTED_TAG_OID" origin "refs/tags/$RELEASE_TAG"
+          fi
+          if [[ "$exists" == "true" ]]; then
+            gh release upload "$RELEASE_TAG" dist/* --clobber
+          else
+            gh release create "$RELEASE_TAG" --draft --verify-tag --generate-notes dist/*
+          fi
+          gh release edit "$RELEASE_TAG" --draft=false
