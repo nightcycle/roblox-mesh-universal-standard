@@ -1,0 +1,16 @@
+Roblox Mesh Universal Standard
+Copyright 2026 nightcycle
+
+The asset-delivery/cache helper in src/assets.rs is adapted from nightcycle's
+imposter-baker, licensed under Apache-2.0:
+https://github.com/nightcycle/imposter-baker
+
+FBX test fixtures in test/fixtures are from Samuli Raivio's ufbx project:
+https://github.com/ufbx/ufbx/tree/main/data
+Their MIT/Unlicense notice is included as test/fixtures/ufbx-LICENSE.
+
+Roblox FileMesh layout and FACS abbreviation mappings follow MaximumADHD's
+Roblox FileMesh Format Specification:
+https://devforum.roblox.com/t/roblox-filemesh-format-specification/326114
+
+The original RBXM demo assets were supplied with this repository.

@@ -1,0 +1,11 @@
+{
+  "name": "MeshUniversalDevelopment",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "MeshUniversal": { "$path": "mesh-runtime/src" },
+      "TestConfiguration": { "$path": "test/fixtures/children.model.json" },
+      "Tests": { "$path": "test/luau" }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+# Releases
+
+The repository contains two products at matching versions: the Rust `rmus`
+executable and `nightcycle/roblox-mesh-universal-standard` Wally package.
+
+1. Update Cargo.toml and mesh-runtime/wally.toml together and regenerate Cargo.lock.
+2. Run CI checks and the Studio integration suite. Rebuild demo exports when the
+   format changes. Commit the source, lockfile, fixtures and generated demo assets.
+3. Push an annotated `vX.Y.Z` tag to the checked commit. The Release workflow waits
+   for CI, builds Windows x64, Linux x64, macOS x64 and macOS ARM64 ZIPs, then
+   publishes those archives, the Wally ZIP, package RBXM, demo RBXL and SHA256SUMS.
+   Executables are at the root of each platform-named ZIP for Rokit discovery.
+4. Configure repository secret `WALLY_AUTH` with the complete auth.toml produced
+   by `wally login` for an account allowed to publish in the nightcycle scope.
+   Run **Publish Wally** manually with the published version tag.
+5. Verify installation in a fresh consumer project:
+   `rokit add nightcycle/roblox-mesh-universal-standard@X.Y.Z`, `rmus --version`,
+   then `wally install` with the documented dependency.
+
+The workflows do not publish merely by building locally. A tag triggers the
+GitHub release; the Wally workflow is a separate explicit publication step.

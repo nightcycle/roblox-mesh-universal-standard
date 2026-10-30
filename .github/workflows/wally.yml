@@ -1,0 +1,43 @@
+name: Publish Wally
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag, e.g. v0.1.0
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: wally-${{ inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: CompeyDev/setup-rokit@v0.2.1
+        with:
+          version: v1.2.0
+      - name: Validate release
+        env:
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/release.py validate "$TAG"
+          test "$(git rev-parse "refs/tags/$TAG^{commit}")" = "$(git rev-parse HEAD)"
+          test "$(gh release view "$TAG" --json isDraft --jq '.isDraft')" = false
+      - name: Publish runtime
+        env:
+          WALLY_AUTH: ${{ secrets.WALLY_AUTH }}
+        run: |
+          test -n "$WALLY_AUTH"
+          mkdir -p "$HOME/.wally"
+          printf '%s' "$WALLY_AUTH" > "$HOME/.wally/auth.toml"
+          wally publish --project-path mesh-runtime

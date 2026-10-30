@@ -1,0 +1,377 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/nightcycle/roblox-mesh-universal-standard/main/schema/mesh-v1.schema.json",
+  "title": "RMUS EditableMesh interchange v1",
+  "type": "object",
+  "properties": {
+    "Format": {
+      "const": "roblox-mesh-universal"
+    },
+    "Version": {
+      "type": "object",
+      "properties": {
+        "Major": {
+          "const": 1
+        },
+        "Minor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "Major",
+        "Minor"
+      ]
+    },
+    "RequiredFeatures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "Vertices": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 3,
+        "maxItems": 3
+      },
+      "minItems": 1,
+      "maxItems": 60000
+    },
+    "Normals": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 3,
+        "maxItems": 3
+      }
+    },
+    "UVs": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    "Colors": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "minItems": 4,
+        "maxItems": 4
+      }
+    },
+    "Faces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Face"
+      },
+      "minItems": 1,
+      "maxItems": 20000
+    },
+    "Bones": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Bone"
+      }
+    },
+    "Skin": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Skin"
+      }
+    },
+    "Facs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Pose"
+      }
+    },
+    "Part": {
+      "$ref": "#/$defs/Part"
+    },
+    "Metadata": {
+      "type": "object"
+    },
+    "Extensions": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "Format",
+    "Version",
+    "Vertices",
+    "Faces"
+  ],
+  "$defs": {
+    "Face": {
+      "type": "object",
+      "properties": {
+        "Vertices": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 3,
+          "maxItems": 4,
+          "uniqueItems": true
+        },
+        "Normals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "Colors": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "UVs": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "required": [
+        "Vertices"
+      ]
+    },
+    "Bone": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "Parent": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "CFrame": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 12,
+          "maxItems": 12
+        },
+        "Virtual": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "Name",
+        "CFrame"
+      ]
+    },
+    "Skin": {
+      "type": "object",
+      "properties": {
+        "Vertex": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "Bones": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "Weights": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      },
+      "required": [
+        "Vertex",
+        "Bones",
+        "Weights"
+      ]
+    },
+    "Pose": {
+      "type": "object",
+      "properties": {
+        "Actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true
+        },
+        "Bones": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "uniqueItems": true
+        },
+        "CFrames": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 12,
+            "maxItems": 12
+          }
+        }
+      },
+      "required": [
+        "Actions",
+        "Bones",
+        "CFrames"
+      ]
+    },
+    "Part": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Size": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "CFrame": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 12,
+          "maxItems": 12
+        },
+        "PivotOffset": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 12,
+          "maxItems": 12
+        },
+        "Color": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "Transparency": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "Reflectance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "MaterialVariant": {
+          "type": "string"
+        },
+        "Anchored": {
+          "type": "boolean"
+        },
+        "CanCollide": {
+          "type": "boolean"
+        },
+        "CanTouch": {
+          "type": "boolean"
+        },
+        "CanQuery": {
+          "type": "boolean"
+        },
+        "CastShadow": {
+          "type": "boolean"
+        },
+        "DoubleSided": {
+          "type": "boolean"
+        },
+        "Material": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "CollisionFidelity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "RenderFidelity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "Attributes": {
+          "type": "object"
+        },
+        "Tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "Name",
+        "Size",
+        "CFrame",
+        "PivotOffset",
+        "Color",
+        "Transparency",
+        "Reflectance",
+        "MaterialVariant",
+        "Anchored",
+        "CanCollide",
+        "CanTouch",
+        "CanQuery",
+        "CastShadow",
+        "DoubleSided",
+        "Material",
+        "CollisionFidelity",
+        "RenderFidelity"
+      ]
+    }
+  }
+}

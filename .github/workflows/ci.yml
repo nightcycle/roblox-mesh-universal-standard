@@ -1,0 +1,46 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  rust:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, windows-2022, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - run: cargo fmt --check
+      - run: cargo test --locked --all-targets
+      - run: cargo clippy --locked --all-targets -- -D warnings
+  luau:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: CompeyDev/setup-rokit@v0.2.1
+        with:
+          version: v1.2.0
+      - run: mkdir -p test/tooling dist
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install jsonschema
+      - run: python scripts/check-schema.py
+      - run: curl --fail --location https://luau-lsp.pages.dev/type-definitions/globalTypes.None.d.luau --output test/tooling/roblox.d.luau
+      - run: rojo sourcemap demo.project.json --output test/tooling/sourcemap.json
+      - run: luau-lsp analyze --definitions=@roblox=test/tooling/roblox.d.luau --sourcemap=test/tooling/sourcemap.json --platform=roblox mesh-runtime/src demo/src test/luau
+      - run: stylua --check mesh-runtime/src demo/src test/luau
+      - run: wally package --project-path mesh-runtime --output dist/roblox-mesh-universal-standard.zip
+      - run: rojo build mesh-runtime/default.project.json --output dist/roblox-mesh-universal-standard.rbxm
+      - run: rojo build demo.project.json --output dist/demo.rbxl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: roblox-mesh-universal-standard-and-demo
+          path: dist/*

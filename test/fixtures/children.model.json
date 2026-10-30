@@ -1,0 +1,159 @@
+{
+  "attributes": {
+    "__RMUSReferences": "[{\"Property\":\"Value\",\"Source\":5,\"Target\":2},{\"Property\":\"Value\",\"Source\":6,\"Target\":1}]",
+    "__RMUSVersion": 1
+  },
+  "children": [
+    {
+      "attributes": {
+        "Example": {
+          "String": "preserved"
+        },
+        "__RMUSNode": {
+          "Float64": 1
+        }
+      },
+      "children": [
+        {
+          "attributes": {
+            "__RMUSNode": {
+              "Float64": 2
+            }
+          },
+          "children": [],
+          "className": "Attachment",
+          "name": "Tip",
+          "properties": {
+            "CFrame": {
+              "CFrame": {
+                "orientation": [
+                  [
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    1.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ],
+                "position": [
+                  0.0,
+                  2.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        {
+          "attributes": {
+            "__RMUSNode": {
+              "Float64": 3
+            }
+          },
+          "children": [
+            {
+              "attributes": {
+                "__RMUSNode": {
+                  "Float64": 4
+                }
+              },
+              "children": [],
+              "className": "Bone",
+              "name": "Child",
+              "properties": {}
+            }
+          ],
+          "className": "Bone",
+          "name": "Root",
+          "properties": {
+            "CFrame": {
+              "CFrame": {
+                "orientation": [
+                  [
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    1.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ],
+                "position": [
+                  1.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        {
+          "attributes": {
+            "__RMUSNode": {
+              "Float64": 5
+            }
+          },
+          "children": [],
+          "className": "ObjectValue",
+          "name": "TipReference",
+          "properties": {}
+        },
+        {
+          "attributes": {
+            "__RMUSNode": {
+              "Float64": 6
+            }
+          },
+          "children": [],
+          "className": "ObjectValue",
+          "name": "SelfReference",
+          "properties": {}
+        },
+        {
+          "attributes": {
+            "__RMUSNode": {
+              "Float64": 7
+            }
+          },
+          "children": [],
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "ColorMapContent": {
+              "Content": {
+                "Uri": "rbxassetid://6341664856"
+              }
+            }
+          }
+        }
+      ],
+      "className": "MeshPart",
+      "name": "Template",
+      "properties": {
+        "Size": {
+          "Vector3": [
+            1.0,
+            1.0,
+            0.05000000074505806
+          ]
+        }
+      }
+    }
+  ],
+  "className": "Configuration"
+}

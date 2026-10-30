@@ -1,0 +1,24 @@
+{
+  "name": "MeshUniversalGallery",
+  "tree": {
+    "$className": "DataModel",
+    "Workspace": {
+      "$properties": { "FilteringEnabled": true, "StreamingEnabled": false },
+      "Ground": { "$className": "Part", "$properties": { "Anchored": true, "Size": [180, 1, 120], "Position": [0, -0.5, 0], "Color": [0.12, 0.15, 0.17], "Material": "Slate" } },
+      "Spawn": { "$className": "SpawnLocation", "$properties": { "Anchored": true, "Neutral": true, "Size": [8, 1, 8], "Position": [0, 0.5, 32], "Transparency": 1, "Duration": 0 } }
+    },
+    "Lighting": { "$properties": { "ClockTime": 14, "Brightness": 2, "Ambient": [0.4, 0.4, 0.4] } },
+    "ReplicatedStorage": {
+      "MeshUniversal": { "$path": "mesh-runtime/src" },
+      "TestConfiguration": { "$path": "test/fixtures/children.model.json" },
+      "Originals": { "$className": "Folder", "Grass": { "$path": "test/grass.rbxm" }, "Lilypad": { "$path": "test/lilypad.rbxm" }, "Pillar": { "$path": "test/pillar.rbxm" } },
+      "Exports": { "$className": "Folder",
+        "Grass": { "$path": "demo/assets/grass.json" }, "GrassChildren": { "$path": "demo/assets/grass.model.json" },
+        "Lilypad": { "$path": "demo/assets/lilypad.json" }, "LilypadChildren": { "$path": "demo/assets/lilypad.model.json" },
+        "Pillar": { "$path": "demo/assets/pillar.json" }, "PillarChildren": { "$path": "demo/assets/pillar.model.json" }
+      },
+      "Tests": { "$path": "test/luau" }
+    },
+    "StarterPlayer": { "StarterPlayerScripts": { "Gallery": { "$path": "demo/src/Gallery.client.luau" } } }
+  }
+}
