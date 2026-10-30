@@ -13,9 +13,10 @@ TARGETS = {
     "macos-aarch64": "aarch64-apple-darwin",
 }
 
-def validate(tag):
-    rust = tomllib.loads((ROOT / "Cargo.toml").read_text())["package"]["version"]
-    wally = tomllib.loads((ROOT / "mesh-runtime/wally.toml").read_text())["package"]["version"]
+def validate(tag, root=ROOT):
+    root = pathlib.Path(root)
+    rust = tomllib.loads((root / "Cargo.toml").read_text())["package"]["version"]
+    wally = tomllib.loads((root / "mesh-runtime/wally.toml").read_text())["package"]["version"]
     if tag != f"v{rust}" or rust != wally:
         raise SystemExit(f"Tag {tag}, Rust {rust} and Wally {wally} must match")
     return rust

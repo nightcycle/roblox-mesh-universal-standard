@@ -15,9 +15,15 @@ jobs:
   publish:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out publishing scripts
+        uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ github.sha }}
+      - name: Check out the tagged package separately
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          path: release-source
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
@@ -30,15 +36,15 @@ jobs:
           TAG: ${{ inputs.tag }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          python scripts/release.py validate "$TAG"
-          test "$(git rev-parse "refs/tags/$TAG^{commit}")" = "$(git rev-parse HEAD)"
+          python scripts/release.py validate "$TAG" release-source
+          test "$(git -C release-source rev-parse "refs/tags/$TAG^{commit}")" = "$(git -C release-source rev-parse HEAD)"
           test "$(gh release view "$TAG" --json isDraft --jq '.isDraft')" = false
       - name: Publish runtime
         env:
           WALLY_AUTH: ${{ secrets.WALLY_AUTH }}
         run: |
           python scripts/wally_auth.py "$HOME/.wally/auth.toml"
-          wally publish --project-path mesh-runtime
+          wally publish --project-path release-source/mesh-runtime
       - name: Remove publishing credentials
         if: always()
         run: rm -f "$HOME/.wally/auth.toml"

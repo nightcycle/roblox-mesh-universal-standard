@@ -15,15 +15,20 @@ executable and `nightcycle/roblox-mesh-universal-standard` Wally package.
    The account must be allowed to publish in the nightcycle scope. The workflow
    validates and writes the TOML config without logging the token, then removes
    the credential file after publishing, including when publishing fails.
-   Run **Publish Wally** manually with the published version tag.
+   Run **Publish Wally** manually from the branch containing the publishing fixes
+   (normally `main`), with the published version tag as the `tag` input. Publishing
+   scripts come from the selected branch's commit; the package is checked out
+   separately from the tag into `release-source`. Older tags do not need to
+   contain the newer publishing helpers.
 5. Verify installation in a fresh consumer project:
    `rokit add nightcycle/roblox-mesh-universal-standard@X.Y.Z`, `rmus --version`,
    then `wally install` with the documented dependency.
 
 The workflows do not publish merely by building locally. A tag triggers the
 GitHub release; the Wally workflow is a separate explicit publication step.
-Both workflows build or publish the tagged source. A retry of an old tag still
-uses the code at that tag, so release tags must contain the relevant fixes.
+Both workflows build or publish the tagged package source, so package and Rust
+code fixes must be included in the release tag. Wally publishing-script fixes
+come from the selected workflow branch and can be used to retry an older tag.
 
 To retry the GitHub release, open **Actions → Release → Run workflow**, select
 the branch containing the updated workflow (normally `main`), and enter the
@@ -36,4 +41,10 @@ The CLI equivalent is:
 
 ```sh
 gh workflow run release.yml --ref main -f tag=v0.1.0
+```
+
+To retry Wally publishing with the current automation and an existing release:
+
+```sh
+gh workflow run wally.yml --ref main -f tag=v0.1.0
 ```
