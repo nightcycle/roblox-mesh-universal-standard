@@ -4,6 +4,12 @@ on:
   pull_request:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      ref:
+        description: Git revision to check; defaults to the triggering revision
+        required: false
+        type: string
+        default: ''
 permissions:
   contents: read
 jobs:
@@ -14,6 +20,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -24,6 +32,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: CompeyDev/setup-rokit@v0.2.1
         with:
           version: v1.2.0

@@ -24,3 +24,16 @@ The workflows do not publish merely by building locally. A tag triggers the
 GitHub release; the Wally workflow is a separate explicit publication step.
 Both workflows build or publish the tagged source. A retry of an old tag still
 uses the code at that tag, so release tags must contain the relevant fixes.
+
+To retry the GitHub release, open **Actions → Release → Run workflow**, select
+the branch containing the updated workflow (normally `main`), and enter the
+existing version tag, such as `v0.1.0`. The workflow resolves that tag once and
+runs CI and all builds against the same commit. It creates a missing release,
+or replaces assets with matching names on an existing release and publishes it
+if it was still a draft. Runs for the same tag are serialized.
+
+The CLI equivalent is:
+
+```sh
+gh workflow run release.yml --ref main -f tag=v0.1.0
+```
